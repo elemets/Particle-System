@@ -2,7 +2,6 @@ import * as THREE from 'three/build/three.module';
 
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
 
-
 /// Vertex Shader
 const _VertexShader = `
 uniform float pointMultiplier;
@@ -271,6 +270,7 @@ class ParticleSystem {
           
 
 
+            console.time('Particle sort Time');
 
         this._particles.sort((a, b) => {
             const distance_1 = this._camera.position.distanceTo(a.position);
@@ -289,6 +289,7 @@ class ParticleSystem {
         });
 
         
+        console.timeEnd('Particle sort Time');
 
 
     }
@@ -298,8 +299,6 @@ class ParticleSystem {
         const sizes = [];
         const colours = [];
         const angles = [];
-        const velocities = [];
-
 
 
         for (let p of this._particles) {
@@ -323,9 +322,12 @@ class ParticleSystem {
     }
 
     Step(timeElapsed){
+
         this._Emitter(timeElapsed);
         this._UpdateParticles(timeElapsed);
         this._UpdateGeometry();
+
+
     }
     
 }
