@@ -1,11 +1,10 @@
 import * as THREE from 'three/build/three.module';
 
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module';
-import Particle from './Particle.js';
 
 
 /// Vertex Shader
-const _VS = `
+const _VertexShader = `
 uniform float pointMultiplier;
 
 attribute float size;
@@ -27,7 +26,7 @@ void main() {
 `;
 
 // Fragment Shader
-const _FS = `
+const _FragmentShader = `
 uniform sampler2D diffuseTexture;
 varying vec4 vColour;
 
@@ -50,10 +49,11 @@ class ParticleSystem {
             }
         };
     
+        // Material properties
     this._material = new THREE.ShaderMaterial({
         uniforms: uniforms,
-        vertexShader: _VS,
-        fragmentShader: _FS,
+        vertexShader: _VertexShader,
+        fragmentShader: _FragmentShader,
         blending: THREE.NormalBlending,
         depthTest: true,
         depthWrite: false,
@@ -64,6 +64,8 @@ class ParticleSystem {
     this._camera = parameters.camera;
     this._particles = [];
 
+    // Setting up buffer geometry
+    // This tells three js how many variables each property is going to need
     this._geometry = new THREE.BufferGeometry();
     this._geometry.setAttribute('position', new THREE.Float32BufferAttribute([], 3));
     this._geometry.setAttribute('size', new THREE.Float32BufferAttribute([], 1));
@@ -74,6 +76,10 @@ class ParticleSystem {
 
     parameters.parent.add(this._points);
 
+
+    // SPLINES
+    // These help to simulate physics and make for an easy way to create 
+    // changing variables over time
     this._alphaSpline = new THREE.SplineCurve ( [
         new THREE.Vector2( 0.0, 1.0),
         new THREE.Vector2( 1.0, 0.7),
@@ -210,6 +216,7 @@ class ParticleSystem {
             }
 
 
+            // This gets rid of any particles which are past their lifetime
             this._particles = this._particles.filter(p => {
                 return p.lifetime > 0.0;
                 
@@ -229,14 +236,9 @@ class ParticleSystem {
                 // changing the colour from red to white over time 
                 p.colour = p.colour.lerpColors(p.colour, new THREE.Color(1, 1, 1), 0.00005)
 
-
-
-            }
-
-            for (let p of this._particles) {
-                const time = 1.0 - p.lifetime / p.maxlife ;
-
                 // this is what causes the swirling looping motion
+
+                // second part
                 if (p.lifetime < 3.5) {
                     p.position.z = this._velocityXSpline.getPointAt(time).y * 0.00985 * time * time * this.wind_speed
                 }
@@ -249,14 +251,9 @@ class ParticleSystem {
                     // changing the y position over time to make it look like sparks flying up
 
                     p.position.y =  0.5 * (this._velocityYSpline.getPointAt(time).y) * time * Math.random(0.9, 1);
-                    // p.position.y =  time * Math.random(0.9, 1) * p.veclotity.y;
                 }
-            }
 
-            for (let p of this._particles) {
-                const time = 1.0 - p.lifetime / p.maxlife ;
-                // p.position.y = this._velocityYSpline.getPointAt(time).y * Math.random(0.9, 1) * 0.001;
-
+                // third part this adjusts the y value causing particles to float upwards
                 if (p.lifetime > 3.0 & Math.random() > 0.985) {
                     p.alpha = this._alphaSpline.getPointAt(time).y 
                     p.position.z = this._velocityXSpline.getPointAt(time).y * time * Math.random(-0.1, 0.2) * 0.01 * 1 
@@ -271,7 +268,6 @@ class ParticleSystem {
                 }
 
             }
-        
           
 
 

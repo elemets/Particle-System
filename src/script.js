@@ -14,6 +14,7 @@ class BasicWorld {
 
 _Initialise() {
 
+    // initialising three js window size parameters
     this._threejs = new THREE.WebGLRenderer();
     this._threejs.shadowMap.enabled = true;
     this._threejs.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -39,6 +40,8 @@ _Initialise() {
     this._scene = new THREE.Scene();
 
     // initialising light properties
+    // Directional light is required here in order for the model we load in later
+    // to show up, if just using ambient light the model won't appear
     let light = new THREE.DirectionalLight(0xFFFFFF);
     light.position.set(100, 100, 100);
     light.target.position.set(0, 0, 0);
@@ -53,19 +56,18 @@ _Initialise() {
     light.shadow.camera.top = 100;
     light.shadow.camera.bottom = -100;
 
+    // initialising the gltf loader which loads in the model
     const logLoader = new GLTFLoader();
+    // initialising the GUI and adding a folder for the fire place x, y and z
     const gui = new GUI();
-
     const firefolder = gui.addFolder("Fire Place Position");
 
     
     this._scene.add(light);
-    
-    
-    
     light = new THREE.AmbientLight(0x404040)
     this._scene.add(light);
     
+    // Setting up orbit controls this allows us to move around the scene
     const controls = new OrbitControls(
         this._camera, this._threejs.domElement);
     controls.target.set(0, 0, 0);
@@ -73,21 +75,40 @@ _Initialise() {
 
     controls.zoomSpeed = 0.3
     controls.panSpeed = 0.3
-    this._camera.position.set(1.875, 1.69, -2.4);
 
+    this._camera_parameters = {
+        cam_x: 1.8754,
+        cam_y: 1.69,
+        cam_z: -2.4
+    }
+
+    this._camera.position.set(this._camera_parameters.cam_x, this._camera_parameters.cam_y, this._camera_parameters.cam_z);
+
+    const camera_controls = gui.addFolder("Camera Position: WARNING (can be weird)")
+
+    this._camera_x = camera_controls.add(this._camera.position, "x", -2, 4)
+    this._camera_y = camera_controls.add(this._camera.position, "y", -2, 4)
+    this._camera_z = camera_controls.add(this._camera.position, "z", -2, 4)
+    // setting up camera location and target so that the fire and particles don't spin around us
+    // by setting the target and location of camera we can have a more fixed location in the scene
+    // creating a more realistic and grounded look
     controls.update()
     controls.target.set(2, 1.69, -2.4);
     controls.update()
 
+
+    // Adding a choice between two locations in the GUI
     this.choose_skybox = { 
         Forest: true,
         Yokohama: false
     }
 
+    
     const locationFolder = gui.addFolder("Choose your location")
     this._Forest = locationFolder.add(this.choose_skybox, "Forest")
     this._Yokohama = locationFolder.add(this.choose_skybox, "Yokohama")
     
+    // These two load in the Sky box textures
     const loader = new THREE.CubeTextureLoader();
     this.forest_texture = loader.load([
         './ForestSkyBox/posx.jpg',
@@ -157,10 +178,12 @@ _OnWindowResize(){
 _RAF() {
     this._Forest.listen().onChange( () => this._scene.background = this.forest_texture)
     this._Yokohama.listen().onChange( () => this._scene.background = this.yoko_texture)
-    requestAnimationFrame((t) => {
+
+
+    requestAnimationFrame((time) => {
 
         if (this._previousRAF === null) {
-            this._previousRAF = t;
+            this._previousRAF = time;
         }
 
         this._threejs.render(this._scene, this._camera);
@@ -168,18 +191,15 @@ _RAF() {
         this._RAF();
 
 
-        this._Step(t - (this._previousRAF) );
-        this._previousRAF = t;
+        this._Step(time - (this._previousRAF) );
+        this._previousRAF = time;
 
     });
     }
 
 _Step(timeElapsed) {
-    const timeElapsedS = timeElapsed * 1;
 
-
-
-    this._particles.Step(timeElapsedS);
+    this._particles.Step(timeElapsed);
     }
 
 }
