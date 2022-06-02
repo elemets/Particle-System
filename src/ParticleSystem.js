@@ -100,11 +100,11 @@ class ParticleSystem {
     // The X velocity curve
     this._velocityXSpline = new THREE.SplineCurve( [
         new THREE.Vector2(0, 15),
-        new THREE.Vector2(0, -10),
-        new THREE.Vector2(0, 1),
-        new THREE.Vector2(0, -1),
-        new THREE.Vector2(0, 0.1),
-        new THREE.Vector2(0, -0.1),
+        new THREE.Vector2(1, -10),
+        new THREE.Vector2(2, 1),
+        new THREE.Vector2(3, -1),
+        new THREE.Vector2(4, 0.1),
+        new THREE.Vector2(5, -0.1),
     ])
 
 
@@ -270,7 +270,6 @@ class ParticleSystem {
           
 
 
-            console.time('Particle sort Time');
 
         this._particles.sort((a, b) => {
             const distance_1 = this._camera.position.distanceTo(a.position);
@@ -289,8 +288,6 @@ class ParticleSystem {
         });
 
         
-        console.timeEnd('Particle sort Time');
-
 
     }
 
@@ -323,11 +320,13 @@ class ParticleSystem {
 
     Step(timeElapsed){
 
+        console.time("Step time")
+        console.log(this._adjustableParticleProps.numberOfParticles)
         this._Emitter(timeElapsed);
         this._UpdateParticles(timeElapsed);
         this._UpdateGeometry();
 
-
+        console.timeEnd("Step time")
     }
     
 }
