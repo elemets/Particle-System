@@ -4,6 +4,6 @@ This is a project using three.js where a campfire is simulated. Different variab
 
 Here is the system in action:
 
-![alt text](https://github.com/elemets/Particle-System/blob/Main/static/fireparticles.jpg?raw=true)
+![alt text](https://github.com/elemets/Particle-System/blob/Main/static/fireparticles.png?raw=true)
 
 
